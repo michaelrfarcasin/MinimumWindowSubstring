@@ -7,41 +7,40 @@ class Solution {
      */
     function minWindow($haystack, $needles) {
         $needleCounts = array_count_values(str_split($needles));
-        if (!$this->haystackContainsNeedleCounts($haystack, $needleCounts)) {
-            return '';
-        }
-        $haystackSize = strlen($haystack);
-        $needlesSize = strlen($needles);
-        $minWindow = $haystack;
-        $minWindowLength = $haystackSize;
+        $window = [];
+        $have = 0;
+        $need = count($needleCounts);
+        $resultStart = -1;
+        $resultLength = INF;
         $start = 0;
-        $end = $needlesSize;
-        while ($start + $needlesSize <= $haystackSize) {
-            $window = substr($haystack, $start, $end - $start);
-            $windowLength = strlen($window);
-            if ($this->haystackContainsNeedleCounts($window, $needleCounts)) {
-                if ($windowLength < $minWindowLength) {
-                    $minWindow = $window;
-                    $minWindowLength = strlen($minWindow);
+        $haystackSize = strlen($haystack);
+        
+        for ($end = 0; $end < $haystackSize; $end++) {
+            $endLetter = $haystack[$end];
+            $window[$endLetter]++;
+            
+            if (isset($needleCounts[$endLetter]) 
+                && $window[$endLetter] == $needleCounts[$endLetter]) {
+                $have++;
+            }
+            
+            while ($have == $need) {
+                // update our result
+                if ($end - $start + 1 < $resultLength) {
+                    $resultStart = $start;
+                    $resultLength = $end - $start + 1;
+                }
+                // pop from the left of our window
+                $startLetter = $haystack[$start];
+                $window[$startLetter]--;
+                if (isset($needleCounts[$startLetter]) 
+                    && $window[$startLetter] < $needleCounts[$startLetter]) {
+                    $have--;
                 }
                 $start++;
-            } else {
-                $end++;
-                if ($end > $haystackSize) {
-                    break;
-                }
             }
         }
         
-        return $minWindow;
-    }
-    
-    private function haystackContainsNeedleCounts($haystack, $needleCounts) {
-        $haystackCounts = array_count_values(str_split($haystack));
-        foreach ($needleCounts as $letter => $count) {
-            $needleCounts[$letter] = max($count - ($haystackCounts[$letter] ?? 0), 0);
-        }
-        
-        return array_sum($needleCounts) == 0;
+        return $resultLength == INF ? '' : substr($haystack, $resultStart, $resultLength);
     }
 }
