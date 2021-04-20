@@ -13,12 +13,21 @@ class Solution {
         $haystackSize = strlen($haystack);
         $needlesSize = strlen($needles);
         $minWindow = $haystack;
-        for ($start = 0; $start + $needlesSize <= $haystackSize; $start++) {
-            $windowLength = strlen($minWindow);
-            for ($length = $needlesSize; ($start + $length <= $haystackSize) && ($length < $windowLength); $length++) {
-                $tempWindow = substr($haystack, $start, $length);
-                if ($this->haystackContainsNeedleCounts($tempWindow, $needleCounts)) {
-                    $minWindow = $tempWindow;
+        $minWindowLength = $haystackSize;
+        $start = 0;
+        $end = $needlesSize;
+        while ($start + $needlesSize <= $haystackSize) {
+            $window = substr($haystack, $start, $end - $start);
+            $windowLength = strlen($window);
+            if ($this->haystackContainsNeedleCounts($window, $needleCounts)) {
+                if ($windowLength < $minWindowLength) {
+                    $minWindow = $window;
+                    $minWindowLength = strlen($minWindow);
+                }
+                $start++;
+            } else {
+                $end++;
+                if ($end > $haystackSize) {
                     break;
                 }
             }
